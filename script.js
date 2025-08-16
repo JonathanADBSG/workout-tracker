@@ -3,6 +3,7 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHxlJG5-Oa_2_WqEwXLTq2idaJABgrcu8SS7hekXjdWSGbDYtJ1Tfjb9T5JvYJsDghRQ/exec";
 
 // --- DOM ELEMENTS ---
+const loaderOverlay = document.getElementById('loader-overlay'); // Get the loader
 const screens = document.querySelectorAll('.screen');
 const startBtn = document.getElementById('start-workout-btn');
 const typeScreen = document.getElementById('type-screen');
@@ -37,6 +38,7 @@ function showScreen(screenId) {
  * Fetches the initial list of exercises from our Google Sheet.
  */
 async function fetchExercises() {
+    loaderOverlay.style.display = 'flex'; // Show loader
     try {
         const response = await fetch(SCRIPT_URL);
         const data = await response.json();
@@ -44,6 +46,8 @@ async function fetchExercises() {
     } catch (error) {
         console.error("Error fetching exercises:", error);
         alert("Could not load exercises. Please check your script URL and internet connection.");
+    } finally {
+        loaderOverlay.style.display = 'none'; // Hide loader
     }
 }
 
@@ -196,4 +200,5 @@ stopBtn.addEventListener('click', stopWorkout);
 // --- INITIALIZATION ---
 
 // Fetch exercises when the app first loads
+
 document.addEventListener('DOMContentLoaded', fetchExercises);
