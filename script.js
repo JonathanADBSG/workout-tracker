@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
 // IMPORTANT: Paste your Google Apps Script Web App URL here
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHxlJG5-Oa_2_WqEwXLTq2idaJABgrcu8SS7hekXjdWSGbDYtJ1Tfjb9T5JvYJsDghRQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgg8ZOmTtSYauMGOkWZf52jBqFGWb9QKd6PiUEX4fa83yEyRObAHtWsq1wcN--KfipyA/exec";
 
 // --- DOM ELEMENTS ---
 const loaderOverlay = document.getElementById('loader-overlay'); // Get the loader
@@ -202,3 +202,4 @@ stopBtn.addEventListener('click', stopWorkout);
 // Fetch exercises when the app first loads
 
 document.addEventListener('DOMContentLoaded', fetchExercises);
+
