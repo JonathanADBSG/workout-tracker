@@ -2,6 +2,7 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHxlJG5-Oa_2_WqEwXLTq2idaJABgrcu8SS7hekXjdWSGbDYtJ1Tfjb9T5JvYJsDghRQ/exec";
 
 // --- DOM ELEMENTS ---
+const loaderOverlay = document.getElementById('loader-overlay'); // Add this at the top with other DOM elements
 const exerciseSelect = document.getElementById('exercise-select');
 const filterContainer = document.getElementById('filter-container');
 const weightChartCanvas = document.getElementById('weight-chart');
@@ -138,11 +139,13 @@ function renderVolumeChart(labels, data) {
  * Fetches all data and initializes the page.
  */
 async function initializeDashboard() {
+    loaderOverlay.style.display = 'flex'; // Show loader
     try {
         const response = await fetch(SCRIPT_URL);
         const data = await response.json();
         allLogs = data.logs;
 
+        // Populate the dropdown with unique exercises
         const uniqueExercises = [...new Set(allLogs.map(log => log.Exercise))];
         exerciseSelect.innerHTML = '<option value="">-- Select an Exercise --</option>';
         uniqueExercises.forEach(ex => {
@@ -155,6 +158,8 @@ async function initializeDashboard() {
     } catch (error) {
         console.error("Error fetching data:", error);
         alert("Could not load workout data.");
+    } finally {
+        loaderOverlay.style.display = 'none'; // Hide loader
     }
 }
 
@@ -174,4 +179,5 @@ filterContainer.addEventListener('click', (e) => {
 });
 
 // --- INITIALIZATION ---
+
 initializeDashboard();
