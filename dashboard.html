@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Progress Dashboard</h1>
+<img src="images/banner 2.png" alt="Workout Illustration" class="workout-banner">
+
+        <div class="form-group">
+            <label for="exercise-select">Select an Exercise</label>
+            <select id="exercise-select">
+                <option>Loading exercises...</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="filter-container">
+            <label>Filter by Date</label>
+            <div>
+                <button class="filter-btn active" data-days="0">All Time</button>
+                <button class="filter-btn" data-days="90">Last 90 Days</button>
+                <button class="filter-btn" data-days="30">Last 30 Days</button>
+            </div>
+        </div>
+
+        <div>
+            <canvas id="weight-chart"></canvas>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <canvas id="sets-chart"></canvas>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <canvas id="volume-chart"></canvas>
+        </div>
+
+       <button onclick="window.location.href='index.html'" class="button-secondary" style="margin-top: 20px;">← Back to Log Workout</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="dashboard.js"></script>
+</body></html>
