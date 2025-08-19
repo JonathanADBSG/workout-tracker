@@ -1,27 +1,58 @@
 // --- CONFIGURATION ---
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbhKeOd3MGQGp4I784PjWp91LSEKETyQG1EpxMZvM7GSUCydyDPhIMnpPIlWsgyg06SQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOPc17fj5Xl0LY-rgKNW3n7fQWjVOjh7MHNHQiFtFg_y3NitamfkVb9nbUe-yr863NgQ/exec"; 
+// Make sure this is your correct, redeployed URL
 
 // --- DOM ELEMENTS ---
-const loaderOverlay = document.getElementById('loader-overlay'); // Add this at the top with other DOM elements
+const loaderOverlay = document.getElementById('loader-overlay');
 const exerciseSelect = document.getElementById('exercise-select');
 const filterContainer = document.getElementById('filter-container');
-const weightChartCanvas = document.getElementById('weight-chart');
+const bodyweightChartCanvas = document.getElementById('bodyweight-chart');
+const exerciseWeightChartCanvas = document.getElementById('exercise-weight-chart');
 const setsChartCanvas = document.getElementById('sets-chart');
-const volumeChartCanvas = document.getElementById('volume-chart'); // New canvas
+const volumeChartCanvas = document.getElementById('volume-chart');
 
 // --- CHART & DATA VARIABLES ---
-let weightChart, setsChart, volumeChart; // Added volumeChart
-let allLogs = []; // To store all workout data
-let currentFilterDays = 0; // 0 for "All Time"
+let bodyweightChart, exerciseWeightChart, setsChart, volumeChart;
+let allLogs = [];
+let allBodyweight = [];
+let currentFilterDays = 0;
 
 /**
- * Main function to update all charts based on selections.
+ * (UPDATED) Renders all charts based on the current filter.
  */
-function updateCharts() {
-    const selectedExercise = exerciseSelect.value;
-    if (!selectedExercise) return;
+function updateAllCharts() {
+    // Filter and render the bodyweight chart
+    let filteredBodyweight = allBodyweight;
+    if (currentFilterDays > 0) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - currentFilterDays);
+        filteredBodyweight = allBodyweight.filter(entry => new Date(entry.Timestamp) >= cutoffDate);
+    }
+    renderBodyweightChart(filteredBodyweight);
 
-    // --- NEW: Filter logs by date ---
+    // Filter and render the exercise-specific charts
+    updateExerciseCharts();
+}
+
+
+/**
+ * Main function to update EXERCISE charts based on selections.
+ */
+function updateExerciseCharts() {
+    const selectedExercise = exerciseSelect.value;
+    // Hide exercise charts if no exercise is selected
+    if (!selectedExercise) {
+        document.getElementById('exercise-weight-chart').style.display = 'none';
+        document.getElementById('sets-chart').style.display = 'none';
+        document.getElementById('volume-chart').style.display = 'none';
+        return;
+    }
+    // Show charts if an exercise is selected
+    document.getElementById('exercise-weight-chart').style.display = 'block';
+    document.getElementById('sets-chart').style.display = 'block';
+    document.getElementById('volume-chart').style.display = 'block';
+
+
     let filteredLogs = allLogs;
     if (currentFilterDays > 0) {
         const cutoffDate = new Date();
@@ -29,10 +60,8 @@ function updateCharts() {
         filteredLogs = allLogs.filter(log => new Date(log.Timestamp) >= cutoffDate);
     }
     
-    // Filter by selected exercise
     const exerciseLogs = filteredLogs.filter(log => log.Exercise === selectedExercise);
 
-    // Group data by date
     const dataByDate = {};
     exerciseLogs.forEach(log => {
         const date = new Date(log.Timestamp).toLocaleDateString();
@@ -41,30 +70,58 @@ function updateCharts() {
         }
         dataByDate[date].weights.push(Number(log.Weight));
         dataByDate[date].setCount++;
-        // --- NEW: Calculate Total Volume ---
         dataByDate[date].totalVolume += Number(log.Weight) * Number(log.Reps);
     });
 
-    // Sort dates chronologically
     const sortedDates = Object.keys(dataByDate).sort((a, b) => new Date(a) - new Date(b));
-
-    // Prepare data arrays for the charts
     const labels = sortedDates;
     const maxWeights = sortedDates.map(date => Math.max(...dataByDate[date].weights));
     const totalSets = sortedDates.map(date => dataByDate[date].setCount);
-    const totalVolumes = sortedDates.map(date => dataByDate[date].totalVolume); // New data array
+    const totalVolumes = sortedDates.map(date => dataByDate[date].totalVolume);
 
-    renderWeightChart(labels, maxWeights);
+    renderExerciseWeightChart(labels, maxWeights);
     renderSetsChart(labels, totalSets);
-    renderVolumeChart(labels, totalVolumes); // New chart render call
+    renderVolumeChart(labels, totalVolumes);
 }
 
 /**
- * Renders the "Max Weight Over Time" chart.
+ * (UPDATED) Renders the "Bodyweight Over Time" chart with specific data.
+ * @param {Array} dataToRender The array of bodyweight entries to display.
  */
-function renderWeightChart(labels, data) {
-    if (weightChart) weightChart.destroy();
-    weightChart = new Chart(weightChartCanvas, {
+function renderBodyweightChart(dataToRender) {
+    const sortedData = dataToRender.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
+    const labels = sortedData.map(entry => new Date(entry.Timestamp).toLocaleDateString());
+    const data = sortedData.map(entry => entry.Weight);
+
+    if (bodyweightChart) bodyweightChart.destroy();
+    bodyweightChart = new Chart(bodyweightChartCanvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Bodyweight',
+                data: data,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { title: { display: true, text: 'Bodyweight Over Time' } },
+            scales: { y: { beginAtZero: false, title: { display: true, text: 'Weight' } } }
+        }
+    });
+}
+
+
+/**
+ * Renders the "Max Weight Over Time" chart for a selected exercise.
+ */
+function renderExerciseWeightChart(labels, data) {
+    if (exerciseWeightChart) exerciseWeightChart.destroy();
+    exerciseWeightChart = new Chart(exerciseWeightChartCanvas, {
         type: 'line',
         data: {
             labels: labels,
@@ -109,7 +166,7 @@ function renderSetsChart(labels, data) {
 }
 
 /**
- * --- NEW: Renders the "Total Volume Over Time" chart. ---
+ * Renders the "Total Volume Over Time" chart.
  */
 function renderVolumeChart(labels, data) {
     if (volumeChart) volumeChart.destroy();
@@ -134,16 +191,19 @@ function renderVolumeChart(labels, data) {
     });
 }
 
-
 /**
  * Fetches all data and initializes the page.
  */
 async function initializeDashboard() {
-    loaderOverlay.style.display = 'flex'; // Show loader
+    loaderOverlay.style.display = 'flex';
     try {
         const response = await fetch(SCRIPT_URL);
         const data = await response.json();
         allLogs = data.logs;
+        allBodyweight = data.bodyweight;
+
+        // Initial render of all charts
+        updateAllCharts();
 
         // Populate the dropdown with unique exercises
         const uniqueExercises = [...new Set(allLogs.map(log => log.Exercise))];
@@ -159,29 +219,22 @@ async function initializeDashboard() {
         console.error("Error fetching data:", error);
         alert("Could not load workout data.");
     } finally {
-        loaderOverlay.style.display = 'none'; // Hide loader
+        loaderOverlay.style.display = 'none';
     }
 }
 
 // --- EVENT LISTENERS ---
-exerciseSelect.addEventListener('change', updateCharts);
+exerciseSelect.addEventListener('change', updateExerciseCharts);
 
 filterContainer.addEventListener('click', (e) => {
     if (e.target.classList.contains('filter-btn')) {
-        // Update active button style
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
-        
-        // Update state and refresh charts
         currentFilterDays = Number(e.target.dataset.days);
-        updateCharts();
+        // This now updates ALL charts, including bodyweight
+        updateAllCharts();
     }
 });
 
 // --- INITIALIZATION ---
-
 initializeDashboard();
-
-
-
-

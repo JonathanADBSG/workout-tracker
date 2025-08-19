@@ -30,10 +30,10 @@
             color: #1c1e21;
         }
         .screen {
-            display: none; /* Hide all screens by default */
+            display: none;
         }
         .screen.active {
-            display: block; /* Show only the active screen */
+            display: block;
         }
         button {
             display: block;
@@ -49,12 +49,18 @@
             margin-top: 15px;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #0056b3;
         }
         .button-secondary {
             background-color: #28a745;
         }
         .button-secondary:hover {
+            background-color: #218838;
+        }
+        .button-tertiary {
+            background-color: #6c757d;
+        }
+        .button-tertiary:hover {
             background-color: #5a6268;
         }
         .button-danger {
@@ -62,6 +68,14 @@
         }
         .button-danger:hover {
             background-color: #c82333;
+        }
+        .repeat-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .repeat-buttons button {
+            flex-grow: 1;
         }
         .form-group {
             margin-bottom: 15px;
@@ -76,7 +90,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Important for padding */
+            box-sizing: border-box;
         }
         #workout-summary {
             margin-top: 20px;
@@ -92,55 +106,75 @@
             margin-bottom: 8px;
             border-left: 4px solid #007bff;
         }
-.workout-banner {
-    width: 100%;
-    max-width: 500px;
-    display: block;
-    margin: 0 auto 20px;
-}
+        .workout-banner {
+            width: 100%;
+            max-width: 500px;
+            display: block;
+            margin: 0 auto 20px;
+        }
         /* --- Loader Styles --- */
-.loader-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-.loader {
-    border: 8px solid #f3f3f3; /* Light grey */
-    border-top: 8px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+        /* --- NEW: Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
- <div id="loader-overlay" class="loader-overlay" style="display: none;">
+    <div id="loader-overlay" class="loader-overlay" style="display: none;">
         <div class="loader"></div>
     </div>
     <div class="container">
         <h1>Workout Tracker</h1>
 
-       <div id="start-screen" class="screen active">
-<img src="images/banner 1min.png" alt="Workout Illustration" class="workout-banner">
-    <h2>Welcome Back!</h2>
-    <button id="start-workout-btn">Start New Workout</button>
-
-    <button onclick="window.location.href='dashboard.html'" class="button-secondary">View Progress Dashboard</button>
-</div>
+        <div id="start-screen" class="screen active">
+            <img src="images/banner 1min.png" alt="Workout Illustration" class="workout-banner">
+            <h2>Welcome Back!</h2>
+            <button id="start-workout-btn">Start New Workout</button>
+            <button id="add-weight-btn" class="button-tertiary">New Weight Entry</button>
+            <button onclick="window.location.href='dashboard.html'" class="button-secondary">View Progress Dashboard</button>
+        </div>
 
         <div id="type-screen" class="screen">
             <h2>Select Workout Type</h2>
@@ -155,12 +189,11 @@
             <form id="log-form">
                 <div class="form-group">
                     <label for="exercise">Exercise</label>
-                    <select id="exercise" name="exercise" required>
-                        </select>
+                    <select id="exercise" name="exercise" required></select>
                 </div>
                 <div class="form-group">
                     <label for="weight">Weight (kg/lbs)</label>
-                    <input type="number" id="weight" name="weight" required>
+                    <input type="number" step="any" id="weight" name="weight" required>
                 </div>
                 <div class="form-group">
                     <label for="reps">Reps</label>
@@ -168,19 +201,31 @@
                 </div>
                 <button type="submit">Add Set</button>
             </form>
+            <div class="repeat-buttons">
+                <button type="button" id="repeat-1-btn" class="button-tertiary">Repeat Last</button>
+                <button type="button" id="repeat-2-btn" class="button-tertiary">Repeat Last 2</button>
+                <button type="button" id="repeat-3-btn" class="button-tertiary">Repeat Last 3</button>
+            </div>
             <div id="workout-summary">
                 <h3>Current Workout Sets</h3>
-                <ul id="sets-list">
-                    </ul>
+                <ul id="sets-list"></ul>
             </div>
             <button id="stop-workout-btn" class="button-danger">Stop Workout & Send Summary</button>
         </div>
-
     </div>
 
-</div> <script src="script.js"></script>
+    <div id="weight-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>New Weight Entry</h2>
+            <div class="form-group">
+                <label for="bodyweight-input">Today's Weight</label>
+                <input type="number" step="any" id="bodyweight-input" placeholder="Enter your weight">
+            </div>
+            <button id="save-weight-btn">Save Weight</button>
+            <button id="close-modal-btn" class="button-danger">Cancel</button>
+        </div>
+    </div>
 
-    </body>
-
+    <script src="script.js"></script>
+</body>
 </html>
-
