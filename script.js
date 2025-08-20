@@ -275,4 +275,5 @@ saveWeightBtn.addEventListener('click', handleSaveWeight);
 
 // --- INITIALIZATION ---
 
-document.addEventListener('DOMContentLoaded', fetchExercises);
+document.addEventListener('DOMContentLoaded', fetchExercisesWithCache);
+
