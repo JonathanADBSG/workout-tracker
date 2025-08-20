@@ -40,16 +40,48 @@ function showScreen(screenId) {
     });
 }
 
-async function fetchExercises() {
-    loaderOverlay.style.display = 'flex';
+// --- NEW: Caching-First Function to Fetch Exercises ---
+async function fetchExercisesWithCache() {
+    const cacheKey = 'workoutExercises';
+    const cachedData = localStorage.getItem(cacheKey);
+
+    // --- Step 1: Load from Cache Immediately ---
+    if (cachedData) {
+        console.log("Loading exercises from local cache.");
+        try {
+            appState.allExercises = JSON.parse(cachedData);
+        } catch(e) {
+            console.error("Could not parse cached exercises:", e);
+        }
+    }
+
+    // --- Step 2: Show a loader only if there's no cached data ---
+    if (appState.allExercises.length === 0) {
+        loaderOverlay.style.display = 'flex';
+    }
+
+    // --- Step 3: Fetch Fresh Data from the Network in the Background ---
     try {
+        console.log("Fetching fresh exercises from network...");
         const response = await fetch(SCRIPT_URL);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
         const data = await response.json();
         appState.allExercises = data.exercises;
+
+        // --- Step 4: Update the Cache with Fresh Data ---
+        localStorage.setItem(cacheKey, JSON.stringify(data.exercises));
+        console.log("Cache updated with fresh exercises.");
+
     } catch (error) {
-        console.error("Error fetching exercises:", error);
-        alert("Could not load exercises. Please check your script URL and internet connection.");
+        console.error("Error fetching fresh exercises:", error);
+        // If the fetch fails, the app can still run with the cached data
+        if (appState.allExercises.length === 0) {
+             alert("Could not load exercises. Please check your script URL and internet connection.");
+        }
     } finally {
+        // Always hide the loader at the end
         loaderOverlay.style.display = 'none';
     }
 }
@@ -242,4 +274,5 @@ saveWeightBtn.addEventListener('click', handleSaveWeight);
 
 
 // --- INITIALIZATION ---
+
 document.addEventListener('DOMContentLoaded', fetchExercises);
