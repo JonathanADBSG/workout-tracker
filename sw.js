@@ -8,19 +8,20 @@ const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v2';
 const SCRIPT_URL_FOR_SW = "https://script.google.com/macros/s/AKfycbzOPc17fj5Xl0LY-rgKNW3n7fQWjVOjh7MHNHQiFtFg_y3NitamfkVb9nbUe-yr863NgQ/exec";
 
 const urlsToCache = [
-  '/',
-  'index.html',
-  'dashboard.html',
-  'script.js',
-  'dashboard.js',
-  'db.js', // Added db.js to the cache list
-  'style.css',
-  'manifest.json',
+   '/workout-tracker/',
+  '/workout-tracker/index.html',
+  '/workout-tracker/dashboard.html',
+  '/workout-tracker/script.js',
+  '/workout-tracker/dashboard.js',
+  '/workout-tracker/style.css',
+  '/workout-tracker/db.js',
+  '/workout-tracker/manifest.json',
   'https://cdn.jsdelivr.net/npm/chart.js',
-  'images/banner 1min.png',
-  'images/banner 2min.png',
-  'icons/icon-192x192.png',
-  'icons/icon-512x512.png'
+  '/workout-tracker/images/banner 1min.png',
+  '/workout-tracker/images/banner 2min.png',
+  '/workout-tracker/icons/icon-192x192.png',
+  '/workout-tracker/icons/icon-512x512.png'
+
 ];
 
 self.addEventListener('install', event => {
@@ -99,3 +100,4 @@ self.addEventListener('sync', event => {
     );
   }
 });
+
