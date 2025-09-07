@@ -103,6 +103,8 @@ function startWorkout(type) {
     showScreen('log-screen');
 }
 
+// script.js
+
 async function sendAndLogSet(setData) {
     try {
         const response = await fetch(SCRIPT_URL, {
@@ -118,9 +120,20 @@ async function sendAndLogSet(setData) {
             throw new Error(result.message);
         }
     } catch (error) {
-        console.error("Error adding set:", error);
-        alert("Failed to add set. Please try again.");
-        return false;
+        console.error("Failed to send set directly, saving for background sync.", error);
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            await writeData('sync-posts', { action: 'addSet', data: setData });
+            navigator.serviceWorker.ready.then(sw => {
+                sw.sync.register('sync-new-data'); // Use the new unified tag
+            });
+            appState.currentSets.push(setData);
+            renderSets();
+            alert("You are offline. Your set has been saved and will be sent automatically when you're back online.");
+            return true;
+        } else {
+            alert("Failed to add set. Background sync not supported.");
+            return false;
+        }
     }
 }
 
@@ -180,12 +193,27 @@ function renderSets() {
     });
 }
 
+// script.js
+
+// script.js
+
 async function stopWorkout() {
     if (!confirm("Are you sure you want to end this workout?")) {
         return;
     }
     stopBtn.disabled = true;
     stopBtn.textContent = 'Ending...';
+    
+    // Function to reset the UI and app state
+    const resetState = () => {
+        appState.workoutId = null;
+        appState.workoutType = null;
+        appState.currentSets = [];
+        stopBtn.disabled = false;
+        stopBtn.textContent = 'Stop Workout & Send Summary';
+        showScreen('start-screen');
+    };
+
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -194,22 +222,24 @@ async function stopWorkout() {
         const result = await response.json();
         if (result.status === 'success') {
             alert("Workout finished! Your summary has been sent via email.");
+            resetState();
         } else {
             throw new Error(result.message);
         }
     } catch (error) {
-        console.error("Error ending workout:", error);
-        alert("Could not end workout. Please try again.");
-    } finally {
-        appState.workoutId = null;
-        appState.workoutType = null;
-        appState.currentSets = [];
-        stopBtn.disabled = false;
-        stopBtn.textContent = 'Stop Workout & Send Summary';
-        showScreen('start-screen');
+        console.error("Failed to end workout, saving for background sync.", error);
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            await writeData('sync-posts', { action: 'endWorkout', data: { workoutId: appState.workoutId } });
+            navigator.serviceWorker.ready.then(sw => sw.sync.register('sync-new-data'));
+            alert("You are offline. Your workout will be ended and a summary sent automatically when you're back online.");
+            resetState();
+        } else {
+            alert("Could not end workout. Please try again.");
+            stopBtn.disabled = false;
+            stopBtn.textContent = 'Stop Workout & Send Summary';
+        }
     }
 }
-
 // --- NEW: Weight Modal Functions ---
 function openWeightModal() {
     weightModal.style.display = 'flex';
@@ -219,6 +249,8 @@ function closeWeightModal() {
     weightModal.style.display = 'none';
     bodyweightInput.value = ''; // Clear input
 }
+
+// script.js
 
 async function handleSaveWeight() {
     const weight = bodyweightInput.value;
@@ -241,14 +273,20 @@ async function handleSaveWeight() {
             throw new Error(result.message);
         }
     } catch (error) {
-        console.error("Error saving weight:", error);
-        alert("Failed to save weight. Please try again.");
+        console.error("Failed to save weight directly, saving for background sync.", error);
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            await writeData('sync-posts', { action: 'addWeight', data: { weight: weight } });
+            navigator.serviceWorker.ready.then(sw => sw.sync.register('sync-new-data'));
+            alert("You are offline. Your weight entry has been saved and will be sent automatically when you're back online.");
+            closeWeightModal();
+        } else {
+            alert("Failed to save weight. Please try again.");
+        }
     } finally {
         saveWeightBtn.disabled = false;
         saveWeightBtn.textContent = "Save Weight";
     }
 }
-
 
 // --- EVENT LISTENERS ---
 startBtn.addEventListener('click', () => showScreen('type-screen'));
@@ -276,4 +314,5 @@ saveWeightBtn.addEventListener('click', handleSaveWeight);
 // --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', fetchExercisesWithCache);
+
 
