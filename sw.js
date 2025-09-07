@@ -1,27 +1,27 @@
-// sw.js (Corrected)
+// sw.js (Complete and Corrected)
 
 importScripts('db.js');
 
-// V2 - Incremented cache names to trigger a new install
-const STATIC_CACHE_NAME = 'workout-tracker-static-v2';
-const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v2';
+// V3 - Incremented cache names to trigger a new install
+const STATIC_CACHE_NAME = 'workout-tracker-static-v3';
+const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v3';
 const SCRIPT_URL_FOR_SW = "https://script.google.com/macros/s/AKfycbzOPc17fj5Xl0LY-rgKNW3n7fQWjVOjh7MHNHQiFtFg_y3NitamfkVb9nbUe-yr863NgQ/exec";
 
+// The full paths to the files that need to be cached
 const urlsToCache = [
-   '/workout-tracker/',
+  '/workout-tracker/',
   '/workout-tracker/index.html',
   '/workout-tracker/dashboard.html',
   '/workout-tracker/script.js',
   '/workout-tracker/dashboard.js',
-  '/workout-tracker/style.css',
   '/workout-tracker/db.js',
+  '/workout-tracker/style.css',
   '/workout-tracker/manifest.json',
   'https://cdn.jsdelivr.net/npm/chart.js',
   '/workout-tracker/images/banner 1min.png',
   '/workout-tracker/images/banner 2min.png',
   '/workout-tracker/icons/icon-192x192.png',
   '/workout-tracker/icons/icon-512x512.png'
-
 ];
 
 self.addEventListener('install', event => {
@@ -52,6 +52,8 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
+
+  // Strategy for Google Apps Script API calls (Network-first, then cache)
   if (requestUrl.origin === 'https://script.google.com') {
     event.respondWith(
       fetch(event.request)
@@ -64,7 +66,9 @@ self.addEventListener('fetch', event => {
         })
         .catch(() => caches.match(event.request))
     );
-  } else {
+  } 
+  // Strategy for all other requests (Cache-first)
+  else {
     event.respondWith(
       caches.match(event.request)
         .then(response => response || fetch(event.request))
@@ -72,7 +76,7 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// Corrected Background Sync Logic
+// RESTORED: Background Sync Logic
 self.addEventListener('sync', event => {
   console.log('[Service Worker] Background syncing', event);
   if (event.tag === 'sync-new-data') {
@@ -86,11 +90,9 @@ self.addEventListener('sync', event => {
               body: JSON.stringify(item)
             });
           });
-          // Wait for all promises to resolve
           return Promise.all(promises);
         })
         .then(() => {
-          // If all fetches were successful, clear the database
           console.log('All data synced successfully. Clearing sync store.');
           return clearAllData('sync-posts');
         })
@@ -100,4 +102,3 @@ self.addEventListener('sync', event => {
     );
   }
 });
-
