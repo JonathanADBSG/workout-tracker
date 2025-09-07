@@ -2,9 +2,9 @@
 
 importScripts('db.js');
 
-// V3 - Incremented cache names to trigger a new install
-const STATIC_CACHE_NAME = 'workout-tracker-static-v3';
-const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v3';
+// V4 - Incremented cache names to trigger a new install
+const STATIC_CACHE_NAME = 'workout-tracker-static-v4';
+const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v4';
 const SCRIPT_URL_FOR_SW = "https://script.google.com/macros/s/AKfycbyEv3n2EdQ8AxmcdED-nK3PlPLAGe6ylMLukc7-plgUb_9lVyQoU_Ssz-GsUWXY2cqduA/exec";
 
 // The full paths to the files that need to be cached
@@ -76,7 +76,7 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// RESTORED: Background Sync Logic
+// Corrected Background Sync Logic
 self.addEventListener('sync', event => {
   console.log('[Service Worker] Background syncing', event);
   if (event.tag === 'sync-new-data') {
@@ -84,15 +84,24 @@ self.addEventListener('sync', event => {
     event.waitUntil(
       readAllData('sync-posts')
         .then(data => {
+          // Add a check to ensure data is an array and not empty
+          if (!Array.isArray(data) || data.length === 0) {
+            console.log('[Service Worker] No data to sync.');
+            return;
+          }
+          
           const promises = data.map(item => {
             return fetch(SCRIPT_URL_FOR_SW, {
               method: 'POST',
               body: JSON.stringify(item)
             });
           });
+          
+          // Wait for all promises to resolve
           return Promise.all(promises);
         })
         .then(() => {
+          // If all fetches were successful, clear the database
           console.log('All data synced successfully. Clearing sync store.');
           return clearAllData('sync-posts');
         })
@@ -102,4 +111,5 @@ self.addEventListener('sync', event => {
     );
   }
 });
+
 
