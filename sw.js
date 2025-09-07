@@ -1,7 +1,10 @@
 // sw.js (Updated)
 
+importScripts('db.js'); 
+
 const STATIC_CACHE_NAME = 'workout-tracker-static-v1';
 const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v1';
+const SCRIPT_URL_FOR_SW = "https://script.google.com/macros/s/AKfycbzOPc17fj5Xl0LY-rgKNW3n7fQWjVOjh7MHNHQiFtFg_y3NitamfkVb9nbUe-yr863NgQ/exec";
 
 // List of files for the "app shell" to be cached immediately
 const urlsToCache = [
@@ -76,6 +79,34 @@ self.addEventListener('fetch', event => {
         .then(response => {
           // Return from cache or fetch from network
           return response || fetch(event.request);
+        })
+    );
+  }
+});
+// --- NEW BACKGROUND SYNC EVENT LISTENER ---
+self.addEventListener('sync', event => {
+  console.log('[Service Worker] Background syncing', event);
+  if (event.tag === 'sync-new-sets') {
+    console.log('[Service Worker] Syncing new Sets');
+    event.waitUntil(
+      readAllData('sync-posts')
+        .then(data => {
+          for (const item of data) {
+            // Re-send each saved request to your Google Script
+            fetch(SCRIPT_URL_FOR_SW, {
+              method: 'POST',
+              body: JSON.stringify(item) 
+            })
+            .then(response => {
+              if (response.ok) {
+                // If the post is successful, clear the stored data
+                clearAllData('sync-posts'); 
+              }
+            })
+            .catch(err => {
+              console.error('Error while sending data: ', err);
+            });
+          }
         })
     );
   }
