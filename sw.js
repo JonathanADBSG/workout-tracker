@@ -83,11 +83,13 @@ self.addEventListener('fetch', event => {
     );
   }
 });
-// --- NEW BACKGROUND SYNC EVENT LISTENER ---
+// sw.js (Updated Sync Listener)
+
 self.addEventListener('sync', event => {
   console.log('[Service Worker] Background syncing', event);
-  if (event.tag === 'sync-new-sets') {
-    console.log('[Service Worker] Syncing new Sets');
+  // Use a single tag for all data syncing
+  if (event.tag === 'sync-new-data') { 
+    console.log('[Service Worker] Syncing new data');
     event.waitUntil(
       readAllData('sync-posts')
         .then(data => {
@@ -100,6 +102,7 @@ self.addEventListener('sync', event => {
             .then(response => {
               if (response.ok) {
                 // If the post is successful, clear the stored data
+                console.log('Successfully synced item:', item);
                 clearAllData('sync-posts'); 
               }
             })
