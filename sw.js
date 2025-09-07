@@ -3,9 +3,9 @@
 importScripts('db.js');
 
 // V4 - Incremented cache names to trigger a new install
-const STATIC_CACHE_NAME = 'workout-tracker-static-v5';
-const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v5';
-const SCRIPT_URL_FOR_SW = "https://script.google.com/macros/s/AKfycbz4OvnVV8l-fI7fcSNMnqEiMjvaF_-iL1h3h3Fnjhn0DEXFPoCKi5apHA3XYsrH6FVFiA/exec";
+const STATIC_CACHE_NAME = 'workout-tracker-static-v6';
+const DYNAMIC_CACHE_NAME = 'workout-tracker-dynamic-v6';
+const SCRIPT_URL_FOR_SW = "https://script.google.com/macros/s/AKfycbyl3XUrWVzzSqLyVaEhDT_60RrUh2QNbdhCkeUFRtG9Pe0-IylSXDl6gqwgbOW47TWt/exec";
 
 // The full paths to the files that need to be cached
 const urlsToCache = [
@@ -111,6 +111,7 @@ self.addEventListener('sync', event => {
     );
   }
 });
+
 
 
 
