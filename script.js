@@ -1,5 +1,5 @@
 // --- CONFIGURATION ---
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOPc17fj5Xl0LY-rgKNW3n7fQWjVOjh7MHNHQiFtFg_y3NitamfkVb9nbUe-yr863NgQ/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEv3n2EdQ8AxmcdED-nK3PlPLAGe6ylMLukc7-plgUb_9lVyQoU_Ssz-GsUWXY2cqduA/exec"; 
 // IMPORTANT: Use the new URL after redeploying!
 
 // --- DOM ELEMENTS ---
@@ -314,5 +314,6 @@ saveWeightBtn.addEventListener('click', handleSaveWeight);
 // --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', fetchExercisesWithCache);
+
 
 
